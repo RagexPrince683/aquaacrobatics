@@ -19,10 +19,6 @@ import com.mojang.authlib.GameProfile;
 @Mixin(EntityPlayerMP.class)
 public abstract class EntityPlayerMPMixin extends EntityPlayer {
 
-    // thread-local to prevent recursive re-entry into our validation injection
-    private static final ThreadLocal<Boolean> POSE_BYPASS = ThreadLocal.withInitial(() -> Boolean.FALSE);
-
-
     public EntityPlayerMPMixin(World worldIn, GameProfile gameProfileIn) {
 
         super(worldIn, gameProfileIn);
@@ -48,54 +44,29 @@ public abstract class EntityPlayerMPMixin extends EntityPlayer {
     private void sanityCheck(CallbackInfo ci) {
         if ((Object) this instanceof IPlayerResizeable resizeable) {
             EntitySize size = resizeable.getSize(resizeable.getPose());
-            if (size == null || size.width <= 0.0F || size.height <= 0.0F
-                || Float.isNaN(size.width) || Float.isNaN(size.height)) {
-
-                POSE_BYPASS.set(Boolean.TRUE);
-                try {
-                    resizeable.setPose(Pose.STANDING);
-                    resizeable.recalculateSize();
-                } finally {
-                    POSE_BYPASS.set(Boolean.FALSE);
-                }
-
+            if (size == null || size.width <= 0.0F || size.height <= 0.0F) {
+                resizeable.setPose(Pose.STANDING);
+                resizeable.recalculateSize();
                 System.err.println("[AquaAcrobatics] Illegal stance auto-corrected to STANDING.");
             }
         }
     }
 
-
     @Inject(method = "setPose", at = @At("HEAD"), cancellable = true)
     private void validatePose(Pose pose, CallbackInfo ci) {
-        // If we are bypassing validation, allow original method to run
-        if (POSE_BYPASS.get()) {
-            return;
-        }
-
         if ((Object) this instanceof IPlayerResizeable resizeable) {
             EntitySize size = resizeable.getSize(pose);
 
-            // If requested pose is invalid, fallback to STANDING, but avoid recursion:
+            // If requested pose is invalid, replace with STANDING
             if (size == null || size.width <= 0.0F || size.height <= 0.0F
                 || Float.isNaN(size.width) || Float.isNaN(size.height)) {
-
-                // Prevent our injection from running again while we set the safe pose
-                POSE_BYPASS.set(Boolean.TRUE);
-                try {
-                    // call original setPose once while bypassing the injection
-                    resizeable.setPose(Pose.STANDING);
-                    resizeable.recalculateSize();
-                } finally {
-                    POSE_BYPASS.set(Boolean.FALSE);
-                }
-
-                // cancel the original setPose call (we already set a safe one)
+                resizeable.setPose(Pose.STANDING);
+                resizeable.recalculateSize();
                 System.err.println("[AquaAcrobatics] Blocked illegal pose: " + pose + " → fallback to STANDING.");
-                ci.cancel();
+                ci.cancel(); // cancel original setPose
             }
         }
     }
-
 
 
 
@@ -131,21 +102,8 @@ public abstract class EntityPlayerMPMixin extends EntityPlayer {
     // Inject into onUpdate to ensure size is correct
     @Inject(method = "onUpdate", at = @At("TAIL"))
     public void onServerUpdate(CallbackInfo ci) {
-        if ((Object) this instanceof IPlayerResizeable resizeable) {
-            Pose pose = resizeable.getPose();
-            EntitySize entitySize = resizeable.getSize(pose);
-
-            // Null-safe — avoid passing bad values to setSize
-            if (entitySize != null && entitySize.width > 0.0F && entitySize.height > 0.0F
-                && !Float.isNaN(entitySize.width) && !Float.isNaN(entitySize.height)) {
-
-                this.setSize(entitySize.width, entitySize.height);
-            } else {
-                // keep a safe fallback — don't let bounding box be set to zero/NaN
-                this.setSize(0.6F, 1.62F);
-                System.err.println("[AquaAcrobatics] onServerUpdate found invalid size for pose " + pose + ", using fallback.");
-            }
-        }
+        Pose pose = ((IPlayerResizeable) this).getPose();
+        EntitySize entitySize = ((IPlayerResizeable) this).getSize(pose);
+        this.setSize(entitySize.width, entitySize.height);
     }
-
 }
