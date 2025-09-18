@@ -52,6 +52,22 @@ public abstract class EntityPlayerMPMixin extends EntityPlayer {
         }
     }
 
+    @Inject(method = "setPose", at = @At("HEAD"), cancellable = true)
+    private void validatePose(Pose pose, CallbackInfo ci) {
+        if ((Object) this instanceof IPlayerResizeable resizeable) {
+            EntitySize size = resizeable.getSize(pose);
+
+            // If requested pose is invalid, replace with STANDING
+            if (size == null || size.width <= 0.0F || size.height <= 0.0F
+                || Float.isNaN(size.width) || Float.isNaN(size.height)) {
+                resizeable.setPose(Pose.STANDING);
+                resizeable.recalculateSize();
+                System.err.println("[AquaAcrobatics] Blocked illegal pose: " + pose + " → fallback to STANDING.");
+                ci.cancel(); // cancel original setPose
+            }
+        }
+    }
+
 
 
     // Helper method (add somewhere in your codebase)
