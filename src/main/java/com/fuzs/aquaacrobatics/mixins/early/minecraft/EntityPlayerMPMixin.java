@@ -28,9 +28,10 @@ public abstract class EntityPlayerMPMixin extends EntityPlayer {
     public void onDeath(DamageSource cause, CallbackInfo callbackInfo) {
 
         // super method is never called where this is set in vanilla
-        //((IPlayerResizeable) this).setPose(Pose.DYING);
-        //temp fix just don't fucking do that because it keeps breaking everything
-        this.setSize(0.6F, 1.8F);
+        ((IPlayerResizeable) this).setPose(Pose.DYING);
+        //temp fix just don't fucking do that because it keeps breaking everything with other mods
+        //this.setSize(0.6F, 1.8F);
+        //setsize might cause illegal stance actually
 
     }
 
