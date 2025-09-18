@@ -212,24 +212,7 @@ public abstract class EntityPlayerMixin extends EntityLivingBase implements IPla
 
     @Override
     public EntitySize getSize(Pose poseIn) {
-        // get the canonical size (may be shared immutable object)
-        EntitySize canonical = SIZE_BY_POSE.getOrDefault(poseIn, STANDING_SIZE);
-
-        // Defensive copy — ensure nobody can mutate the shared instance and ruin values
-        EntitySize copy = new EntitySize(canonical.width, canonical.height, canonical.isFlexible());
-
-        // Sanitize: guarantee legal non-zero values
-        if (copy == null || Float.isNaN(copy.width) || Float.isNaN(copy.height)
-            || copy.width <= 0.0F || copy.height <= 0.0F) {
-
-            // Optional logging to trace where this happened
-            System.err.println("[AquaAcrobatics] getSize() sanitised illegal size for pose " + poseIn
-                + " — returning STANDING fallback. width=" + (copy == null ? "null" : copy.width));
-
-            return new EntitySize(STANDING_SIZE.width, STANDING_SIZE.height, STANDING_SIZE.isFlexible());
-        }
-
-        return copy;
+        return SIZE_BY_POSE.getOrDefault(poseIn, STANDING_SIZE);
     }
 
     @Override
@@ -237,28 +220,17 @@ public abstract class EntityPlayerMixin extends EntityLivingBase implements IPla
         EntitySize oldSize = this.size;
         Pose pose = this.getPose();
         EntitySize newSize = this.getSize(pose);
-
-        // If getSize returned a garbage/newSize is illegal, replace with guaranteed fallback
-        if (newSize == null || Float.isNaN(newSize.width) || Float.isNaN(newSize.height)
-            || newSize.width <= 0.0F || newSize.height <= 0.0F) {
-
-            System.err.println("[AquaAcrobatics] recalculateSize() detected illegal size for pose "
-                + pose + ", replacing with standing fallback. badWidth="
-                + (newSize == null ? "null" : newSize.width));
-
-            newSize = new EntitySize(STANDING_SIZE.width, STANDING_SIZE.height, STANDING_SIZE.flexible());
-        }
-
         if (this.isResizingAllowed()) {
+
             this.recalculateSize(oldSize, newSize);
-            // update direct fields only with legal values
+            // don't forget to update those
             this.width = newSize.width;
             this.height = newSize.height;
         }
 
+        // update after calling #isResizingAllowed
         this.size = newSize;
     }
-
 
     protected void recalculateSize(EntitySize oldSize, EntitySize newSize) {
         if (newSize.width < oldSize.width) {
@@ -500,11 +472,6 @@ public abstract class EntityPlayerMixin extends EntityLivingBase implements IPla
 
     protected AxisAlignedBB getBoundingBox(Pose pose) {
         EntitySize entitysize = this.getSize(pose);
-        if (entitysize == null || Float.isNaN(entitysize.width) || Float.isNaN(entitysize.height)
-            || entitysize.width <= 0.0F || entitysize.height <= 0.0F) {
-            // defensive fallback to standing
-            entitysize = STANDING_SIZE;
-        }
         float f = entitysize.width / 2.0F;
         return AxisAlignedBB.getBoundingBox(
             this.posX - (double) f,
@@ -514,7 +481,6 @@ public abstract class EntityPlayerMixin extends EntityLivingBase implements IPla
             this.posY - (double) this.yOffset + (double) this.ySize + (double) entitysize.height,
             this.posZ + (double) f);
     }
-
 
     @Override
     public boolean getShouldBeDead() {
