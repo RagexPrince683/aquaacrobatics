@@ -30,8 +30,7 @@ public abstract class EntityPlayerMPMixin extends EntityPlayer {
             Pose dyingPose = Pose.DYING;
             float stanceValue = 1.8F; // Safe default (standing)
             try {
-                stanceValue = dyingPose.DYING.ordinal();
-                //how do you fuckers write in this shit
+                stanceValue = dyingPose.getStanceValue();
                 if (stanceValue <= 0.0F || Float.isNaN(stanceValue)) {
                     stanceValue = 1.8F;
                 }
