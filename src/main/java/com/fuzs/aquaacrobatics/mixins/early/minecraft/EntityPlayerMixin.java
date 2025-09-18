@@ -484,14 +484,9 @@ public abstract class EntityPlayerMixin extends EntityLivingBase implements IPla
 
     @Override
     public boolean getShouldBeDead() {
+        return this.isDead;
+    } // are we deadass
 
-        return this.getHealth() <= 0.0F;
-        //oh shit no wait this is why that's happening yeah this is a really bad way of doing this.
-        // because A. the player can lag back (like with et futurium's trapdoors off a spike trap and be both <= 0 health but also alive
-        // causing an illegal stance
-        //or you can just be in a xenofac safezone which cancels out death entirely causing illegal stance to happen.
-        //Great! I hated every bit of this.
-    }
 
     @Override
     public boolean isSwimming() {
