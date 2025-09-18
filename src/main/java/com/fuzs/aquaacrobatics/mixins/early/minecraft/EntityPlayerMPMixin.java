@@ -24,28 +24,35 @@ public abstract class EntityPlayerMPMixin extends EntityPlayer {
         super(worldIn, gameProfileIn);
     }
 
-    @Inject(method = "onDeath", at = @At("TAIL"))
-    public void onDeath(DamageSource cause, CallbackInfo callbackInfo) {
-        if (this instanceof IPlayerResizeable) {
-            IPlayerResizeable resizeable = (IPlayerResizeable) this;
-
-            // Always set to DYING pose on death
-            resizeable.setPose(Pose.DYING);
-
-            // SAFETY GUARD: If DYING is not handled, fallback to STANDING
+    @Inject(method = "onDeath", at = @At("HEAD"))
+    public void onDeathHead(DamageSource cause, CallbackInfo ci) {
+        if ((Object) this instanceof IPlayerResizeable resizeable) {
+            // Pre-emptively set a safe pose
             EntitySize dyingSize = resizeable.getSize(Pose.DYING);
             if (dyingSize == null || dyingSize.width <= 0.0F || dyingSize.height <= 0.0F
                 || Float.isNaN(dyingSize.width) || Float.isNaN(dyingSize.height)) {
-                // Fallback: set to STANDING pose and recalculate
+                resizeable.setPose(Pose.STANDING);
+            } else {
+                resizeable.setPose(Pose.DYING);
+            }
+            resizeable.recalculateSize();
+        }
+    }
+    // Fix illegal stance height on death by attacking head not tail
+
+    @Inject(method = "recalculateSize", at = @At("TAIL"))
+    private void sanityCheck(CallbackInfo ci) {
+        if ((Object) this instanceof IPlayerResizeable resizeable) {
+            EntitySize size = resizeable.getSize(resizeable.getPose());
+            if (size == null || size.width <= 0.0F || size.height <= 0.0F) {
                 resizeable.setPose(Pose.STANDING);
                 resizeable.recalculateSize();
-                System.err.println("[AquaAcrobatics] Illegal size/stance detected for DYING pose. Fallback to STANDING.");
-            } else {
-                // Make sure player size is recalculated for DYING pose
-                resizeable.recalculateSize();
+                System.err.println("[AquaAcrobatics] Illegal stance auto-corrected to STANDING.");
             }
         }
     }
+
+
 
     // Helper method (add somewhere in your codebase)
     private float getLegalStanceForPose(Pose pose) {
