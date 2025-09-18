@@ -399,68 +399,54 @@ public abstract class EntityPlayerMixin extends EntityLivingBase implements IPla
     }
 
     protected void updatePose() {
-
         if (this.getShouldBeDead()) {
-
-            // this is completely ignored in vanilla
             this.setPose(Pose.DYING);
-        } else if (this.isPlayerSleeping()) {
+            return;
+        }
 
-            // handle this before swimming pose clear check
+        if (this.isPlayerSleeping()) {
             this.setPose(Pose.SLEEPING);
-        } else if (this.isPoseClear(Pose.SWIMMING)) {
+            return;
+        }
+
+        if (this.isPoseClear(Pose.SWIMMING)) {
             Pose pose;
             if (EFRIntegration.isElytraFlying(this.getPlayer())) {
-
                 pose = Pose.FALL_FLYING;
             } else if (this.isForcingCrawling() || this.isSwimming()) {
-
                 pose = Pose.SWIMMING;
-                // Adjust yOffset for swimming on client side
                 if (this.worldObj.isRemote) {
-                    // with an eye height of 0.12F this adds up to 0.4F
                     this.yOffset = 0.28F;
                 }
-                // otherwise unable to sneak on client when there is not enough space for the pose, but actual player
-                // size is smaller
             } else if (this.isActuallySneaking() && !this.capabilities.isFlying
                 && (this.onGround || !this.isInWater())
                 && !this.isOnLadder()) {
-
-                    pose = Pose.CROUCHING;
-                    // Reset yOffset for non-swimming poses on client
-                    if (this.worldObj.isRemote) {
-                        this.yOffset = 1.62F;
-                    }
-                } else {
-
-                    pose = Pose.STANDING;
-                    // Reset yOffset for non-swimming poses on client
-                    if (this.worldObj.isRemote) {
-                        this.yOffset = 1.62F;
-                    }
-                }
-
-            Pose pose1;
-            if (!this.noClip && !this.isRiding() && this.isResizingAllowed() && !this.isPoseClear(pose)) {
-
-                if (this.isPoseClear(Pose.CROUCHING)) {
-
-                    pose1 = Pose.CROUCHING;
-                } else {
-                    if (ConfigHandler.MovementConfig.enableCrawling) {
-                        pose1 = Pose.SWIMMING;
-                    } else {
-                        pose1 = Pose.STANDING;
-                    }
+                pose = Pose.CROUCHING;
+                if (this.worldObj.isRemote) {
+                    this.yOffset = 1.62F;
                 }
             } else {
-
-                pose1 = pose;
+                pose = Pose.STANDING;
+                if (this.worldObj.isRemote) {
+                    this.yOffset = 1.62F;
+                }
             }
-            this.setPose(pose1);
+
+            Pose finalPose;
+            if (!this.noClip && !this.isRiding() && this.isResizingAllowed() && !this.isPoseClear(pose)) {
+                if (this.isPoseClear(Pose.CROUCHING)) {
+                    finalPose = Pose.CROUCHING;
+                } else {
+                    finalPose = ConfigHandler.MovementConfig.enableCrawling ? Pose.SWIMMING : Pose.STANDING;
+                }
+            } else {
+                finalPose = pose;
+            }
+
+            this.setPose(finalPose);
         }
     }
+
 
     private void updateEyeHeight() {
 
@@ -484,7 +470,10 @@ public abstract class EntityPlayerMixin extends EntityLivingBase implements IPla
 
     @Override
     public boolean getShouldBeDead() {
-        return this.isDead;
+        //return this.isDead;
+        //illegal stance
+        return this.deathTime > 0;
+        //should work because we aren't calling pre death
     } // are we deadass
 
 
