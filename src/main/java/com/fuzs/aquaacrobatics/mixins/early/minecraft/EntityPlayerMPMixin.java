@@ -26,9 +26,20 @@ public abstract class EntityPlayerMPMixin extends EntityPlayer {
 
     @Inject(method = "onDeath", at = @At("TAIL"))
     public void onDeath(DamageSource cause, CallbackInfo callbackInfo) {
-
-        // super method is never called where this is set in vanilla
-        ((IPlayerResizeable) this).setPose(Pose.DYING);
+        if (this instanceof IPlayerResizeable) {
+            Pose dyingPose = Pose.DYING;
+            float stanceValue = 1.8F; // Safe default (standing)
+            try {
+                stanceValue = dyingPose.getStanceValue();
+                if (stanceValue <= 0.0F || Float.isNaN(stanceValue)) {
+                    stanceValue = 1.8F;
+                }
+            } catch (Exception e) {
+                stanceValue = 1.8F;
+            }
+            ((IPlayerResizeable) this).setPose(Pose.DYING);
+            // If setPose takes a float, use: ((IPlayerResizeable) this).setPose(stanceValue);
+        }
     }
 
     @Override
