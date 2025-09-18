@@ -27,19 +27,34 @@ public abstract class EntityPlayerMPMixin extends EntityPlayer {
     @Inject(method = "onDeath", at = @At("TAIL"))
     public void onDeath(DamageSource cause, CallbackInfo callbackInfo) {
         if (this instanceof IPlayerResizeable) {
-            Pose dyingPose = Pose.DYING;
-            float stanceValue = 1.8F; // Safe default (standing)
-            try {
-                stanceValue = dyingPose.DYING.ordinal();
-                //how do you fuckers write in this shit
-                if (stanceValue <= 0.0F || Float.isNaN(stanceValue)) {
-                    stanceValue = 1.8F;
-                }
-            } catch (Exception e) {
-                stanceValue = 1.8F;
+            IPlayerResizeable resizeable = (IPlayerResizeable) this;
+
+            // Always set to DYING pose on death
+            resizeable.setPose(Pose.DYING);
+
+            // SAFETY GUARD: If DYING is not handled, fallback to STANDING
+            EntitySize dyingSize = resizeable.getSize(Pose.DYING);
+            if (dyingSize == null || dyingSize.width <= 0.0F || dyingSize.height <= 0.0F
+                || Float.isNaN(dyingSize.width) || Float.isNaN(dyingSize.height)) {
+                // Fallback: set to STANDING pose and recalculate
+                resizeable.setPose(Pose.STANDING);
+                resizeable.recalculateSize();
+                System.err.println("[AquaAcrobatics] Illegal size/stance detected for DYING pose. Fallback to STANDING.");
+            } else {
+                // Make sure player size is recalculated for DYING pose
+                resizeable.recalculateSize();
             }
-            ((IPlayerResizeable) this).setPose(Pose.DYING);
-            // If setPose takes a float, use: ((IPlayerResizeable) this).setPose(stanceValue);
+        }
+    }
+
+    // Helper method (add somewhere in your codebase)
+    private float getLegalStanceForPose(Pose pose) {
+        // Map pose to stance value; replace with your actual logic
+        switch (pose) {
+            case DYING: return 0.5F; // Or whatever is legal for DYING
+            case STANDING: return 1.8F;
+            case CROUCHING: return 1.5F;
+            default: return 1.8F;
         }
     }
 
