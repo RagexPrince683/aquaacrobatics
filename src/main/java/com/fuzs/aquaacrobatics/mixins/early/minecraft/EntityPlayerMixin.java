@@ -38,6 +38,7 @@ import com.google.common.collect.ImmutableMap;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @SuppressWarnings({ "unused", "ConstantConditions" })
 @Mixin(EntityPlayer.class)
@@ -297,6 +298,13 @@ public abstract class EntityPlayerMixin extends EntityLivingBase implements IPla
 
     protected float getEyeHeight(Pose poseIn, EntitySize sizeIn) {
         return poseIn == Pose.SLEEPING || poseIn == Pose.DYING ? 0.2F : this.getStandingEyeHeight(poseIn, sizeIn);
+    }
+
+    @Inject(method = "getSize", at = @At("HEAD"), cancellable = true)
+    private void fixDyingSize(Pose pose, CallbackInfoReturnable<EntitySize> cir) {
+        if (pose == Pose.DYING) {
+            cir.setReturnValue(new EntitySize(0.6F, 1.8F, false));
+        }
     }
 
     @Override
