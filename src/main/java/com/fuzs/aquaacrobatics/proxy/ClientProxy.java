@@ -65,6 +65,8 @@ public class ClientProxy extends CommonProxy {
     @SubscribeEvent
     public void onKeyPress(InputEvent.KeyInputEvent event) {
         if (ConfigHandler.MovementConfig.enableToggleCrawling && Keybindings.forceCrawling.getIsKeyPressed()) {
+            //todo apply slowness when forcing crawling
+            //todo when jumping, stop forcing crawling
             IPlayerResizeable player = (IPlayerResizeable) Minecraft.getMinecraft().thePlayer;
             if (player != null) {
                 if (player.canForceCrawling()) NetworkHandler.INSTANCE

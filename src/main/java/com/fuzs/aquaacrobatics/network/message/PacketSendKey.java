@@ -52,6 +52,9 @@ public class PacketSendKey implements IMessage {
         private IMessage handle(PacketSendKey message, MessageContext ctx) {
             EntityPlayerMP playerEntity = ctx.getServerHandler().playerEntity;
             if (message.keybind == KeybindPacket.TOGGLE_CRAWLING) {
+                //todo slowness and mining fatigue to prevent abuse
+                //todo also if player jumps disable crawling
+
                 IPlayerResizeable resizeable = (IPlayerResizeable) playerEntity;
                 resizeable.setForcingCrawling(!resizeable.isForcingCrawling());
             }
