@@ -1,5 +1,9 @@
 package com.fuzs.aquaacrobatics.proxy;
 
+import com.fuzs.aquaacrobatics.entity.player.IPlayerResizeable;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.potion.Potion;
 import net.minecraftforge.common.MinecraftForge;
 
 import com.fuzs.aquaacrobatics.AquaAcrobatics;
@@ -14,9 +18,30 @@ import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.event.entity.living.LivingEvent;
 
 @EventBusSubscriber
 public class CommonProxy {
+
+    //hopefully prevent crawl jumping (I don't think most people can do that to begin with)
+    @SubscribeEvent
+    public void onPlayerJump(LivingEvent.LivingJumpEvent event) {
+        if (event.entityLiving instanceof EntityPlayer) {
+            EntityPlayer player = (EntityPlayer) event.entityLiving;
+
+            if (player instanceof IPlayerResizeable) {
+                IPlayerResizeable resizeable = (IPlayerResizeable) player;
+                if (resizeable.isForcingCrawling()) {
+                    // cancel crawl if they jump
+                    resizeable.setForcingCrawling(false);
+
+                    // remove debuffs too
+                    player.removePotionEffect(Potion.moveSlowdown.id);
+                    player.removePotionEffect(Potion.digSlowdown.id);
+                }
+            }
+        }
+    }
 
     private boolean needNetworking() {
         return ConfigHandler.MovementConfig.enableToggleCrawling;

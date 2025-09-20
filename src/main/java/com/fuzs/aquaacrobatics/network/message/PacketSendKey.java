@@ -8,6 +8,8 @@ import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
 import cpw.mods.fml.common.network.simpleimpl.MessageContext;
 import io.netty.buffer.ByteBuf;
+import net.minecraft.potion.Potion;
+import net.minecraft.potion.PotionEffect;
 
 public class PacketSendKey implements IMessage {
 
@@ -51,13 +53,25 @@ public class PacketSendKey implements IMessage {
 
         private IMessage handle(PacketSendKey message, MessageContext ctx) {
             EntityPlayerMP playerEntity = ctx.getServerHandler().playerEntity;
-            if (message.keybind == KeybindPacket.TOGGLE_CRAWLING) {
-                //todo slowness and mining fatigue to prevent abuse
-                //todo also if player jumps disable crawling
 
+            if (message.keybind == KeybindPacket.TOGGLE_CRAWLING) {
                 IPlayerResizeable resizeable = (IPlayerResizeable) playerEntity;
-                resizeable.setForcingCrawling(!resizeable.isForcingCrawling());
+
+                // flip crawl state
+                boolean newState = !resizeable.isForcingCrawling();
+                resizeable.setForcingCrawling(newState);
+
+                if (newState) {
+                    // Apply debuffs while crawling
+                    playerEntity.addPotionEffect(new PotionEffect(Potion.moveSlowdown.id, Integer.MAX_VALUE, 1, false)); // Slowness II
+                    playerEntity.addPotionEffect(new PotionEffect(Potion.digSlowdown.id, Integer.MAX_VALUE, 0, false)); // Mining Fatigue I
+                } else {
+                    // Remove debuffs when not crawling
+                    playerEntity.removePotionEffect(Potion.moveSlowdown.id);
+                    playerEntity.removePotionEffect(Potion.digSlowdown.id);
+                }
             }
+
             return null;
         }
     }
