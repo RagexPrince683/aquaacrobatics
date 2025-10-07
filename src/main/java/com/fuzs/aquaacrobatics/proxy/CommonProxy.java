@@ -23,25 +23,53 @@ import net.minecraftforge.event.entity.living.LivingEvent;
 @EventBusSubscriber
 public class CommonProxy {
 
-    //hopefully prevent crawl jumping (I don't think most people can do that to begin with)
     @SubscribeEvent
-    public void onPlayerJump(LivingEvent.LivingJumpEvent event) {
+    public static void onPlayerJump(LivingEvent.LivingJumpEvent event) {
+        //well that's an easy fix (*duh)
         if (event.entityLiving instanceof EntityPlayer) {
             EntityPlayer player = (EntityPlayer) event.entityLiving;
 
             if (player instanceof IPlayerResizeable) {
                 IPlayerResizeable resizeable = (IPlayerResizeable) player;
                 if (resizeable.isForcingCrawling()) {
-                    // cancel crawl if they jump
+                    // cancel crawling when they jump
                     resizeable.setForcingCrawling(false);
 
-                    // remove debuffs too
+                    // remove debuffs
                     player.removePotionEffect(Potion.moveSlowdown.id);
                     player.removePotionEffect(Potion.digSlowdown.id);
                 }
             }
         }
     }
+
+    //hopefully prevent crawl jumping (I don't think most people can do that to begin with)
+    //@SubscribeEvent
+    //public void onPlayerJump(LivingEvent.LivingJumpEvent event) {
+    //    if (event.entityLiving instanceof EntityPlayer) {
+    //        EntityPlayer player = (EntityPlayer) event.entityLiving;
+//
+    //        if (player instanceof IPlayerResizeable) {
+    //            IPlayerResizeable resizeable = (IPlayerResizeable) player;
+    //            if (resizeable.isForcingCrawling()) {
+    //                // cancel crawl if they jump
+    //                resizeable.setForcingCrawling(false);
+//
+    //                // remove debuffs too
+    //                player.removePotionEffect(Potion.moveSlowdown.id);
+    //                player.removePotionEffect(Potion.digSlowdown.id);
+    //            }
+    //        }
+    //    }
+    //}
+
+    /**
+     * [07/10/2025 07:00:57 AM] java.lang.IllegalArgumentException: Encountered unexpected non-static method: com.fuzs.aquaacrobatics.proxy.CommonProxy onPlayerJump(Lnet/minecraftforge/event/entity/living/LivingEvent$LivingJumpEvent;)V
+     * [07/10/2025 07:00:57 AM] 	at com.gtnewhorizon.gtnhlib.eventbus.AutoEventBus.executePhase(AutoEventBus.java:110)
+     * [07/10/2025 07:00:57 AM] 	at com.gtnewhorizon.gtnhlib.CommonProxy.init(CommonProxy.java:49)
+     *
+     */
+
 
     private boolean needNetworking() {
         return ConfigHandler.MovementConfig.enableToggleCrawling;
