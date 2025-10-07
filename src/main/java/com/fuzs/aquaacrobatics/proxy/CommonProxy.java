@@ -24,24 +24,25 @@ import net.minecraftforge.event.entity.living.LivingEvent;
 public class CommonProxy {
 
     //hopefully prevent crawl jumping (I don't think most people can do that to begin with)
-    @SubscribeEvent
-    public void onPlayerJump(LivingEvent.LivingJumpEvent event) {
-        if (event.entityLiving instanceof EntityPlayer) {
-            EntityPlayer player = (EntityPlayer) event.entityLiving;
-
-            if (player instanceof IPlayerResizeable) {
-                IPlayerResizeable resizeable = (IPlayerResizeable) player;
-                if (resizeable.isForcingCrawling()) {
-                    // cancel crawl if they jump
-                    resizeable.setForcingCrawling(false);
-
-                    // remove debuffs too
-                    player.removePotionEffect(Potion.moveSlowdown.id);
-                    player.removePotionEffect(Potion.digSlowdown.id);
-                }
-            }
-        }
-    }
+    //@SubscribeEvent
+    //public void onPlayerJump(LivingEvent.LivingJumpEvent event) {
+    //    if (event.entityLiving instanceof EntityPlayer) {
+    //        EntityPlayer player = (EntityPlayer) event.entityLiving;
+//
+    //        if (player instanceof IPlayerResizeable) {
+    //            IPlayerResizeable resizeable = (IPlayerResizeable) player;
+    //            if (resizeable.isForcingCrawling()) {
+    //                // cancel crawl if they jump
+    //                resizeable.setForcingCrawling(false);
+//
+    //                // remove debuffs too
+    //                player.removePotionEffect(Potion.moveSlowdown.id);
+    //                player.removePotionEffect(Potion.digSlowdown.id);
+    //            }
+    //        }
+    //    }
+    //}
+    //ok this is annoying
 
     private boolean needNetworking() {
         return ConfigHandler.MovementConfig.enableToggleCrawling;
@@ -51,6 +52,8 @@ public class CommonProxy {
         IntegrationManager.loadCompat();
         if (needNetworking()) NetworkHandler.registerMessages(AquaAcrobatics.MODID);
         MinecraftForge.EVENT_BUS.register(new CommonHandler());
+        MinecraftForge.EVENT_BUS.register(new CrawlHandler());
+
     }
 
     public void onInit(FMLInitializationEvent event) {
@@ -75,6 +78,22 @@ public class CommonProxy {
          * biome.getWaterColorMultiplier();
          * }
          */
+    }
+
+    public class CrawlHandler {
+        @SubscribeEvent
+        public void onPlayerJump(LivingEvent.LivingJumpEvent event) {
+            if (!(event.entityLiving instanceof EntityPlayer)) return;
+            EntityPlayer player = (EntityPlayer) event.entityLiving;
+            if (player instanceof IPlayerResizeable) {
+                IPlayerResizeable r = (IPlayerResizeable) player;
+                if (r.isForcingCrawling()) {
+                    r.setForcingCrawling(false);
+                    player.removePotionEffect(Potion.moveSlowdown.id);
+                    player.removePotionEffect(Potion.digSlowdown.id);
+                }
+            }
+        }
     }
 
 }
