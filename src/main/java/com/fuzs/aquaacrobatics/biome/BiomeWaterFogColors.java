@@ -29,6 +29,7 @@ public abstract class BiomeWaterFogColors {
         "minecraft:mutated_taiga_cold,4020182,",
         "integrateddynamics:biome_meneglin,,5613789",
         "biomesoplenty:bayou,0x62AF84,0x0C211C",
+        "biomesoplenty:bog,0x36256,0x0C211",
         "biomesoplenty:dead_swamp,0x354762,0x040511",
         "biomesoplenty:mangrove,0x448FBD,0x061326",
         "biomesoplenty:mystic_grove,0x9C3FE4,0x2E0533",
