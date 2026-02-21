@@ -58,30 +58,31 @@ public class PacketSendKey implements IMessage {
             EntityPlayerMP playerEntity = ctx.getServerHandler().playerEntity;
 
             if (message.keybind == KeybindPacket.TOGGLE_CRAWLING) {
+
                 IPlayerResizeable resizeable = (IPlayerResizeable) playerEntity;
 
-                // flip crawl state
                 boolean newState = !resizeable.isForcingCrawling();
                 resizeable.setForcingCrawling(newState);
 
-                if (effectsWhileCrawling) {
+                if (effectsWhileCrawling && !playerEntity.worldObj.isRemote) {
 
-                    if (newState ) { //ENSURE WE ARE ACTUALLY CRAWLING, NOT JUST FORCING IT?
-                        //newState is the keybind. If it's true, then we are forcing crawl pose, which means we should apply debuffs.
-                        //ensure we are on server
-                        if (!playerEntity.worldObj.isRemote) {
-                            // Apply debuffs while crawling
-                            playerEntity.addPotionEffect(new PotionEffect(Potion.moveSlowdown.id, Integer.MAX_VALUE, 1, false)); // Slowness II
-                            playerEntity.addPotionEffect(new PotionEffect(Potion.digSlowdown.id, Integer.MAX_VALUE, 0, false)); // Mining Fatigue I
-                        }
-                    } else {
-                        //IF THE POSE IS STANDING, THEN REMOVE DEBUFFS. THIS PREVENTS DEBUFFS FROM STICKING AROUND WHEN USING THE KEYBIND TO EXIT CRAWL POSE
+                    Pose currentPose = resizeable.getPose();
 
-                        if (!playerEntity.worldObj.isRemote) {
-                            // Remove debuffs when not crawling
-                            playerEntity.removePotionEffect(Potion.moveSlowdown.id);
-                            playerEntity.removePotionEffect(Potion.digSlowdown.id);
-                        }
+                    boolean actuallyCrawling = currentPose == Pose.SWIMMING;
+                    // In Aqua Acrobatics crawling uses SWIMMING pose
+
+                    if (actuallyCrawling) {
+                        // Apply debuffs only if pose actually changed
+                        playerEntity.addPotionEffect(
+                            new PotionEffect(Potion.moveSlowdown.id, Integer.MAX_VALUE, 1, false)
+                        );
+                        playerEntity.addPotionEffect(
+                            new PotionEffect(Potion.digSlowdown.id, Integer.MAX_VALUE, 0, false)
+                        );
+                    } else if (currentPose == Pose.STANDING) {
+                        // Remove debuffs only if truly standing
+                        playerEntity.removePotionEffect(Potion.moveSlowdown.id);
+                        playerEntity.removePotionEffect(Potion.digSlowdown.id);
                     }
                 }
             }
