@@ -11,6 +11,8 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 
+import static com.fuzs.aquaacrobatics.config.ConfigHandler.MovementConfig.effectsWhileCrawling;
+
 public class PacketSendKey implements IMessage {
 
     public enum KeybindPacket {
@@ -61,14 +63,17 @@ public class PacketSendKey implements IMessage {
                 boolean newState = !resizeable.isForcingCrawling();
                 resizeable.setForcingCrawling(newState);
 
-                if (newState) {
-                    // Apply debuffs while crawling
-                    playerEntity.addPotionEffect(new PotionEffect(Potion.moveSlowdown.id, Integer.MAX_VALUE, 1, false)); // Slowness II
-                    playerEntity.addPotionEffect(new PotionEffect(Potion.digSlowdown.id, Integer.MAX_VALUE, 0, false)); // Mining Fatigue I
-                } else {
-                    // Remove debuffs when not crawling
-                    playerEntity.removePotionEffect(Potion.moveSlowdown.id);
-                    playerEntity.removePotionEffect(Potion.digSlowdown.id);
+                if (effectsWhileCrawling) {
+
+                    if (newState) {
+                        // Apply debuffs while crawling
+                        playerEntity.addPotionEffect(new PotionEffect(Potion.moveSlowdown.id, Integer.MAX_VALUE, 1, false)); // Slowness II
+                        playerEntity.addPotionEffect(new PotionEffect(Potion.digSlowdown.id, Integer.MAX_VALUE, 0, false)); // Mining Fatigue I
+                    } else {
+                        // Remove debuffs when not crawling
+                        playerEntity.removePotionEffect(Potion.moveSlowdown.id);
+                        playerEntity.removePotionEffect(Potion.digSlowdown.id);
+                    }
                 }
             }
 

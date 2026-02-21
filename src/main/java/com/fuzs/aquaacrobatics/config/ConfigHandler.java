@@ -74,6 +74,11 @@ public class ConfigHandler {
         @Config.Comment("Allow climbing vines and climbing by pressing jump.")
         public static boolean newClimbingBehavior = false;
 
+        //why is all of this shit errored what the fuck is a spotless java, why WHY
+        @Config.Name("Effects While Crawling")
+        @Config.Comment("Apply slowness and mining fatigue while crawling.")
+        public static boolean effectsWhileCrawling = true;
+
     }
 
     public static class BlocksConfig {
