@@ -89,8 +89,10 @@ public class CommonProxy {
                 IPlayerResizeable r = (IPlayerResizeable) player;
                 if (r.isForcingCrawling()) {
                     r.setForcingCrawling(false);
-                    player.removePotionEffect(Potion.moveSlowdown.id);
-                    player.removePotionEffect(Potion.digSlowdown.id);
+                    if (!player.worldObj.isRemote) {
+                        player.removePotionEffect(Potion.moveSlowdown.id);
+                        player.removePotionEffect(Potion.digSlowdown.id);
+                    }
                 }
             }
         }

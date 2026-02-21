@@ -436,8 +436,10 @@ public abstract class EntityPlayerMixin extends EntityLivingBase implements IPla
                     }
                 } else {
                     if (this.isPoseClear(Pose.STANDING)) {
-                        this.removePotionEffect(Potion.moveSlowdown.id);
-                        this.removePotionEffect(Potion.digSlowdown.id);
+                        if (!this.worldObj.isRemote) {
+                            this.removePotionEffect(Potion.moveSlowdown.id);
+                            this.removePotionEffect(Potion.digSlowdown.id);
+                        }
                         pose = Pose.STANDING;
                         if (this.worldObj.isRemote) {
                             this.yOffset = 1.62F;
