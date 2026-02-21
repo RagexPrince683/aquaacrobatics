@@ -75,12 +75,18 @@ public class PacketSendKey implements IMessage {
                             playerEntity.addPotionEffect(new PotionEffect(Potion.digSlowdown.id, Integer.MAX_VALUE, 0, false)); // Mining Fatigue I
                         }
                     } else {
-                        //IF THE POSE IS STANDING, THEN REMOVE DEBUFFS. THIS PREVENTS DEBUFFS FROM STICKING AROUND WHEN USING THE KEYBIND TO EXIT CRAWL POSE
+                        //if (resizeable.getPose() == Pose.STANDING) { //NEVER FIRES
+                        if (!playerEntity.worldObj.isRemote) { //ENSURE ITS ON SERVER
+                        if (resizeable.isPoseClear(Pose.STANDING)) {
 
-                        if (!playerEntity.worldObj.isRemote) {
-                            // Remove debuffs when not crawling
-                            playerEntity.removePotionEffect(Potion.moveSlowdown.id);
-                            playerEntity.removePotionEffect(Potion.digSlowdown.id);
+                            //IF THE POSE IS STANDING, THEN REMOVE DEBUFFS. THIS PREVENTS DEBUFFS FROM STICKING AROUND WHEN USING THE KEYBIND TO EXIT CRAWL POSE
+
+
+                                // Remove debuffs when not crawling
+                                playerEntity.removePotionEffect(Potion.moveSlowdown.id);
+                                playerEntity.removePotionEffect(Potion.digSlowdown.id);
+                            }
+                            //}
                         }
                     }
                 }
