@@ -13,6 +13,7 @@ import net.minecraft.block.material.Material;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.PlayerCapabilities;
+import net.minecraft.potion.Potion;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
@@ -435,6 +436,8 @@ public abstract class EntityPlayerMixin extends EntityLivingBase implements IPla
                     }
                 } else {
                     if (this.isPoseClear(Pose.STANDING)) {
+                        this.removePotionEffect(Potion.moveSlowdown.id);
+                        this.removePotionEffect(Potion.digSlowdown.id);
                         pose = Pose.STANDING;
                         if (this.worldObj.isRemote) {
                             this.yOffset = 1.62F;
