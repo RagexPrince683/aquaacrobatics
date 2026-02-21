@@ -40,6 +40,9 @@ import com.mojang.authlib.GameProfile;
 @Mixin(EntityPlayerSP.class)
 public abstract class EntityPlayerSPMixin extends AbstractClientPlayer implements IPlayerSPSwimming {
 
+    private static final boolean BETTER_SPRINTING_LOADED =
+        cpw.mods.fml.common.Loader.isModLoaded("bettersprinting");
+
     @Shadow
     protected Minecraft mc;
     @Shadow
@@ -270,13 +273,18 @@ public abstract class EntityPlayerSPMixin extends AbstractClientPlayer implement
         this.updatePlayerMoveState();
         this.isCrouching = this.isCrouching(!((IPlayerResizeable) this).isPoseClear(Pose.STANDING));
         // handle sprinting behaviour DEFENSIVELY!!!
-        if (this.isSprinting() != this.movementStorage.isSprinting) {
-            this.setSprinting(this.movementStorage.isSprinting);
+        if (!BETTER_SPRINTING_LOADED) {
+            if (this.isSprinting() != this.movementStorage.isSprinting) {
+                this.setSprinting(this.movementStorage.isSprinting);
+            }
         }
-        boolean isSaturated = (float) this.getFoodStats()
-            .getFoodLevel() > 6.0F || this.capabilities.allowFlying;
-        this.startSprinting(isSaturated);
-        this.stopSprinting(isSaturated);
+        if (!BETTER_SPRINTING_LOADED) {
+            boolean isSaturated = (float) this.getFoodStats()
+                .getFoodLevel() > 6.0F || this.capabilities.allowFlying;
+
+            this.startSprinting(isSaturated);
+            this.stopSprinting(isSaturated);
+        }
         // handle misc movement
         // this.handleElytraTakeoff();
         this.handleWaterSneaking();
