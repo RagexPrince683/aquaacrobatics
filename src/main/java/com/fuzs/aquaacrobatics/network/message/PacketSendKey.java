@@ -68,7 +68,7 @@ public class PacketSendKey implements IMessage {
 
                     Pose currentPose = resizeable.getPose();
 
-                    boolean actuallyCrawling = currentPose == Pose.SWIMMING;
+                    boolean actuallyCrawling = currentPose == Pose.CROUCHING;
                     // In Aqua Acrobatics crawling uses SWIMMING pose
 
                     if (actuallyCrawling) {
