@@ -269,8 +269,10 @@ public abstract class EntityPlayerSPMixin extends AbstractClientPlayer implement
 
         this.updatePlayerMoveState();
         this.isCrouching = this.isCrouching(!((IPlayerResizeable) this).isPoseClear(Pose.STANDING));
-        // handle sprinting behaviour
-        this.setSprinting(this.movementStorage.isSprinting);
+        // handle sprinting behaviour DEFENSIVELY!!!
+        if (this.isSprinting() != this.movementStorage.isSprinting) {
+            this.setSprinting(this.movementStorage.isSprinting);
+        }
         boolean isSaturated = (float) this.getFoodStats()
             .getFoodLevel() > 6.0F || this.capabilities.allowFlying;
         this.startSprinting(isSaturated);
