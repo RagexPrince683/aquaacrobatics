@@ -1,5 +1,6 @@
 package com.fuzs.aquaacrobatics.network.message;
 
+import com.fuzs.aquaacrobatics.entity.Pose;
 import net.minecraft.entity.player.EntityPlayerMP;
 
 import com.fuzs.aquaacrobatics.entity.player.IPlayerResizeable;
@@ -65,7 +66,8 @@ public class PacketSendKey implements IMessage {
 
                 if (effectsWhileCrawling) {
 
-                    if (newState) {
+                    if (newState ) { //ENSURE WE ARE ACTUALLY CRAWLING, NOT JUST FORCING IT?
+                        //newState is the keybind. If it's true, then we are forcing crawl pose, which means we should apply debuffs.
                         //ensure we are on server
                         if (!playerEntity.worldObj.isRemote) {
                             // Apply debuffs while crawling
@@ -73,6 +75,8 @@ public class PacketSendKey implements IMessage {
                             playerEntity.addPotionEffect(new PotionEffect(Potion.digSlowdown.id, Integer.MAX_VALUE, 0, false)); // Mining Fatigue I
                         }
                     } else {
+                        //IF THE POSE IS STANDING, THEN REMOVE DEBUFFS. THIS PREVENTS DEBUFFS FROM STICKING AROUND WHEN USING THE KEYBIND TO EXIT CRAWL POSE
+
                         if (!playerEntity.worldObj.isRemote) {
                             // Remove debuffs when not crawling
                             playerEntity.removePotionEffect(Potion.moveSlowdown.id);
