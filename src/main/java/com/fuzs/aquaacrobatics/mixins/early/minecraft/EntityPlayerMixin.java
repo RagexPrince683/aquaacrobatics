@@ -418,7 +418,7 @@ public abstract class EntityPlayerMixin extends EntityLivingBase implements IPla
         }
 
         if (this.isPoseClear(Pose.SWIMMING)) {
-            Pose pose;
+            Pose pose = this.getPose();
             if (EFRIntegration.isElytraFlying(this.getPlayer())) {
                 pose = Pose.FALL_FLYING;
             } else if (this.isForcingCrawling() || this.isSwimming()) {
@@ -429,16 +429,18 @@ public abstract class EntityPlayerMixin extends EntityLivingBase implements IPla
             } else if (this.isActuallySneaking() && !this.capabilities.isFlying
                 && (this.onGround || !this.isInWater())
                 && !this.isOnLadder()) {
-                pose = Pose.CROUCHING;
-                if (this.worldObj.isRemote) {
-                    this.yOffset = 1.62F;
+                    pose = Pose.CROUCHING;
+                    if (this.worldObj.isRemote) {
+                        this.yOffset = 1.62F;
+                    }
+                } else {
+                    if (this.isPoseClear(Pose.STANDING)) {
+                        pose = Pose.STANDING;
+                        if (this.worldObj.isRemote) {
+                            this.yOffset = 1.62F;
+                        }
+                    }
                 }
-            } else {
-                pose = Pose.STANDING;
-                if (this.worldObj.isRemote) {
-                    this.yOffset = 1.62F;
-                }
-            }
 
             Pose finalPose;
             if (!this.noClip && !this.isRiding() && this.isResizingAllowed() && !this.isPoseClear(pose)) {
