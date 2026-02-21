@@ -66,13 +66,18 @@ public class PacketSendKey implements IMessage {
                 if (effectsWhileCrawling) {
 
                     if (newState) {
-                        // Apply debuffs while crawling
-                        playerEntity.addPotionEffect(new PotionEffect(Potion.moveSlowdown.id, Integer.MAX_VALUE, 1, false)); // Slowness II
-                        playerEntity.addPotionEffect(new PotionEffect(Potion.digSlowdown.id, Integer.MAX_VALUE, 0, false)); // Mining Fatigue I
+                        //ensure we are on server
+                        if (!playerEntity.worldObj.isRemote) {
+                            // Apply debuffs while crawling
+                            playerEntity.addPotionEffect(new PotionEffect(Potion.moveSlowdown.id, Integer.MAX_VALUE, 1, false)); // Slowness II
+                            playerEntity.addPotionEffect(new PotionEffect(Potion.digSlowdown.id, Integer.MAX_VALUE, 0, false)); // Mining Fatigue I
+                        }
                     } else {
-                        // Remove debuffs when not crawling
-                        playerEntity.removePotionEffect(Potion.moveSlowdown.id);
-                        playerEntity.removePotionEffect(Potion.digSlowdown.id);
+                        if (!playerEntity.worldObj.isRemote) {
+                            // Remove debuffs when not crawling
+                            playerEntity.removePotionEffect(Potion.moveSlowdown.id);
+                            playerEntity.removePotionEffect(Potion.digSlowdown.id);
+                        }
                     }
                 }
             }
