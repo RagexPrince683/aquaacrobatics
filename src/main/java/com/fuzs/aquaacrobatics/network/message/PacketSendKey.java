@@ -1,6 +1,7 @@
 package com.fuzs.aquaacrobatics.network.message;
 
 import com.fuzs.aquaacrobatics.entity.Pose;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 
 import com.fuzs.aquaacrobatics.entity.player.IPlayerResizeable;
@@ -68,7 +69,7 @@ public class PacketSendKey implements IMessage {
 
                     Pose currentPose = resizeable.getPose();
 
-                    boolean actuallyCrawling = currentPose == Pose.CROUCHING;
+                    boolean actuallyCrawling = resizeable.isForcingCrawling(); //this.isForcingCrawling()
                     // In Aqua Acrobatics crawling uses SWIMMING pose
 
                     if (actuallyCrawling) {
